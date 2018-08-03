@@ -1,0 +1,7 @@
+*.pyc
+*.npz
+.DS_Store
+results/
+*.mp4
+movies/
+
