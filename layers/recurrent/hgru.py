@@ -155,6 +155,7 @@ class hGRU(object):
             if self.alpha and not self.lesion_alpha:
                 self.alpha = tf.get_variable(
                     name='%s_alpha' % self.layer_name,
+                    trainable=self.train,
                     initializer=initialization.xavier_initializer(
                         shape=self.bias_shape,
                         uniform=self.normal_initializer,
