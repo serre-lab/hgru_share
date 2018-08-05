@@ -341,17 +341,18 @@ class hGRU(object):
     def build(self, x):
         """Run the backprop version of the CCircuit."""
         self.prepare_tensors()
+        x_shape = x.get_shape().as_list()
         i0 = tf.constant(0)
         if self.hidden_init == 'identity':
             h1 = tf.identity(x)
             h2 = tf.identity(x)
         elif self.hidden_init == 'random':
             h1 = initialization.xavier_initializer(
-                shape=[self.n, self.h, self.w, self.k],
+                shape=x_shape,
                 uniform=self.normal_initializer,
                 mask=None)
             h2 = initialization.xavier_initializer(
-                shape=[self.n, self.h, self.w, self.k],
+                shape=x_shape,
                 uniform=self.normal_initializer,
                 mask=None)
         elif self.hidden_init == 'zeros':
