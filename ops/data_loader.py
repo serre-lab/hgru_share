@@ -175,7 +175,10 @@ def image_augmentations(
         # Pixel/image-level augmentations
         if 'singleton' in data_augmentations:
             image = tf.expand_dims(image, axis=-1)
-            print 'Adding singleton dimension.'
+            print 'Adding singleton dimension to image.'
+        if 'singleton_label' in data_augmentations:
+            label = tf.expand_dims(label, axis=-1)
+            print 'Adding singleton dimension to label.'
         if 'bsds_crop' in data_augmentations and im_size_check:
             assert len(image.get_shape()) == 3, '4D not implemented yet.'
             # intermediate_size = [171, 256, 3]
@@ -192,6 +195,12 @@ def image_augmentations(
             print 'Applying BSDS crop.'
         if 'uint8_rescale' in data_augmentations:
             image = tf.cast(image, tf.float32) / 255.
+            print 'Applying uint8 rescale to the image.'
+        if 'uint8_rescale_label' in data_augmentations:
+            label = tf.cast(label, tf.float32) / 255.
+            print 'Applying uint8 rescale to the label.'
+        if 'uint8_rescale_-1_1' in data_augmentations:
+            image = 2 * (tf.cast(image, tf.float32) / 255.) - 1
             print 'Applying uint8 rescale.'
         if 'image_to_bgr' in data_augmentations:
             image = tf.stack(
@@ -267,6 +276,26 @@ def image_augmentations(
             label.set_shape(
                 model_input_image_size[:2] + [
                     combo_shape[-1] - model_input_image_size[-1]])
+        if 'rc_res' in data_augmentations and im_size_check:
+            image = random_crop(image, model_input_image_size)
+            if len(model_input_image_size) > 2:
+                model_input_image_size = model_input_image_size[:2]
+            ms = [x // 2 for x in model_input_image_size]
+            image = resize_image_label(
+                im=image,
+                model_input_image_size=ms,
+                f='bicubic')
+            print 'Applying random crop and resize.'
+        if 'cc_res' in data_augmentations and im_size_check:
+            image = center_crop(image, model_input_image_size)
+            if len(model_input_image_size) > 2:
+                model_input_image_size = model_input_image_size[:2]
+            ms = [x // 2 for x in model_input_image_size]
+            image = resize_image_label(
+                im=image,
+                model_input_image_size=ms,
+                f='bicubic')
+            print 'Applying center crop and resize.'
         if 'random_crop' in data_augmentations and im_size_check:
             image = random_crop(image, model_input_image_size)
             print 'Applying random crop.'
@@ -435,6 +464,8 @@ def image_augmentations(
             print 'Applying per-image zscore.'
         if 'flip_polarity' in data_augmentations:
             image = tf.abs(image - 1.)
+        if 'NCHW' in data_augmentations:
+            image = tf.transpose(image, (2, 0, 1))
     else:
         assert len(image.get_shape()) == 3, '4D not implemented yet.'
         image = tf.image.resize_image_with_crop_or_pad(
@@ -586,7 +617,8 @@ def placeholder_image_augmentations(
         model_input_image_size,
         data_augmentations,
         batch_size,
-        labels=None):
+        labels=None,
+        aug_lab=False):
     """Apply augmentations to placeholder data."""
     split_images = tf.split(images, batch_size, axis=0)
     if labels is not None:
@@ -595,11 +627,18 @@ def placeholder_image_augmentations(
         split_labels = [None] * batch_size
     aug_images, aug_labels = [], []
     for idx in range(batch_size):
-        aug_image, aug_label = image_augmentations(
-            image=tf.squeeze(split_images[idx], axis=0),
-            data_augmentations=data_augmentations,
-            model_input_image_size=model_input_image_size,
-            label=tf.squeeze(split_labels[idx], axis=0))
+        if aug_lab:
+            aug_image, aug_label = image_augmentations(
+                image=tf.squeeze(split_images[idx], axis=0),
+                data_augmentations=data_augmentations,
+                model_input_image_size=model_input_image_size,
+                label=tf.squeeze(split_labels[idx], axis=0))
+        else:
+            aug_image, _ = image_augmentations(
+                image=tf.squeeze(split_images[idx], axis=0),
+                data_augmentations=data_augmentations,
+                model_input_image_size=model_input_image_size)
+            aug_label = split_labels[idx]
         aug_images += [aug_image]
         aug_labels += [aug_label]
     return tf.stack(aug_images), tf.stack(aug_labels)

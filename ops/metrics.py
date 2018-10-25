@@ -10,7 +10,7 @@ def class_accuracy(logits, labels):
                 tf.squeeze(tf.cast(labels, dtype=tf.int64)))))
 
 
-def pearson_score(pred, labels, eps_1=1e-4, eps_2=1e-12):
+def pearson_score(pred, labels, eps_1=1e-4, eps_2=1e-12, REDUCTION=None):
     """Pearson correlation."""
     x_shape = [int(x) for x in pred.get_shape()]
     y_shape = [int(x) for x in labels.get_shape()]
@@ -56,4 +56,8 @@ def pearson_score(pred, labels, eps_1=1e-4, eps_2=1e-12):
                 tf.square(x2_flat - x2_mean),
                 -1),
             count))
-    return cov / (tf.multiply(x1_std, x2_std) + eps_2)
+    score = cov / (tf.multiply(x1_std, x2_std) + eps_2)
+    if REDUCTION is None:
+        return score
+    else:
+        return REDUCTION(score)

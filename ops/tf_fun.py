@@ -1,6 +1,37 @@
+"""Misc. functions for tensorflow model construction and training."""
 import numpy as np
 import tensorflow as tf
 import json
+
+
+def check_early_stop(
+        perf_history,
+        minimum_length=20,
+        short_history=3,
+        long_history=5,
+        fail_function=np.less_equal):
+    """
+    Determine whether to stop early. Using deepgaze criteria:
+
+    We determine this point by comparing the performance from
+    the last three epochs to the performance five epochs before those.
+    Training runs for at least 20 epochs, and is terminated if all three
+    of the last epochs show decreased performance or if
+    800 epochs are reached.
+
+    """
+    if len(perf_history) < minimum_length:
+        early_stop = False
+    else:
+        short_perf = perf_history[-short_history:]
+        long_perf = perf_history[-long_history + short_history:short_history]
+        short_check = fail_function(np.mean(long_perf), short_perf)
+        if all(short_check):  # If we should stop
+            early_stop = True
+        else:
+            early_stop = False
+
+    return early_stop
 
 
 def count_parameters(var_list, print_count=False):

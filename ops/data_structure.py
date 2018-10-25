@@ -37,6 +37,7 @@ class data:
             optimizer,
             model_name,
             dataset,
+            num_params,
             output_directory):
         """Set model information as attributes."""
         self.create_meta()
@@ -55,6 +56,7 @@ class data:
         self.optimizer = optimizer
         self.model_name = model_name
         self.dataset = dataset
+        self.num_params = num_params
         self.output_directory = output_directory
         if output_directory is not None:
             self.file_pointer = os.path.join(
