@@ -39,9 +39,26 @@ def make_dir(d):
         os.makedirs(d)
 
 
+def prepare_directories(config, exp_label):
+    """Prepare some useful directories."""
+    dir_list = {
+        'checkpoints': os.path.join(
+            config.checkpoints, exp_label),
+        'summaries': os.path.join(
+            config.summaries, exp_label),
+        'condition_evaluations': os.path.join(
+            config.condition_evaluations, exp_label),
+        'weights': os.path.join(
+            config.condition_evaluations, exp_label, 'weights')
+    }
+    [make_dir(v) for v in dir_list.values()]
+    return dir_list
+
+
 def save_npys(data, model_name, output_string):
     """Save key/values in data as numpys."""
     for k, v in data.iteritems():
+        k = k.replace('/', '_')
         output = os.path.join(
             output_string,
             '%s_%s' % (model_name, k))
