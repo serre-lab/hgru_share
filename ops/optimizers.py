@@ -19,7 +19,7 @@ def get_optimizer(
             optim = lambda x: tf.train.AdamOptimizer(x)
         elif optimizer == 'nadam':
             optim = tf.contrib.opt.NadamOptimizer
-        elif optimizer =='power':
+        elif optimizer == 'power':
             optim = tf.contrib.opt.PowerSignOptimizer
         elif optimizer == 'sgd':
             optim = tf.train.GradientDescentOptimizer
@@ -85,4 +85,3 @@ def momentum(loss, lr, var_list=None, momentum=0.9, clip_gradients=None):
         learning_rate=lr,
         momentum=momentum)
     return optim
-

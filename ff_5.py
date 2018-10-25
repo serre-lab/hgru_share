@@ -4,9 +4,9 @@ import tensorflow as tf
 from layers.feedforward import conv
 from layers.feedforward import normalization
 from layers.feedforward import pooling
-from layers.recurrent import gru
 from config import Config
 from ops import model_tools
+from argparse import ArgumentParser
 
 
 def experiment_params():
@@ -54,6 +54,8 @@ def build_model(data_tensor, reuse, training):
                 'pretrained_key': 's1',
                 'nonlinearity': 'square'
             }
+            num_filters = 9
+            kernel_size = 20
             x = conv.conv_layer(
                 bottom=data_tensor,
                 name='gabor_input',
@@ -65,8 +67,8 @@ def build_model(data_tensor, reuse, training):
             activity = conv.conv_layer(
                 bottom=x,
                 name='c1',
-                num_filters=9,
-                kernel_size=20,
+                num_filters=num_filters,
+                kernel_size=kernel_size,
                 trainable=training,
                 use_bias=False)
             activity = normalization.batch(
@@ -77,8 +79,8 @@ def build_model(data_tensor, reuse, training):
             activity = conv.conv_layer(
                 bottom=activity,
                 name='c2',
-                num_filters=9,
-                kernel_size=20,
+                num_filters=num_filters,
+                kernel_size=kernel_size,
                 trainable=training,
                 use_bias=False)
             activity = normalization.batch(
@@ -89,8 +91,8 @@ def build_model(data_tensor, reuse, training):
             activity = conv.conv_layer(
                 bottom=activity,
                 name='c3',
-                num_filters=9,
-                kernel_size=20,
+                num_filters=num_filters,
+                kernel_size=kernel_size,
                 trainable=training,
                 use_bias=False)
             activity = normalization.batch(
@@ -101,8 +103,8 @@ def build_model(data_tensor, reuse, training):
             activity = conv.conv_layer(
                 bottom=activity,
                 name='c4',
-                num_filters=9,
-                kernel_size=20,
+                num_filters=num_filters,
+                kernel_size=kernel_size,
                 trainable=training,
                 use_bias=False)
             activity = normalization.batch(
@@ -113,8 +115,8 @@ def build_model(data_tensor, reuse, training):
             activity = conv.conv_layer(
                 bottom=activity,
                 name='c5',
-                num_filters=9,
-                kernel_size=20,
+                num_filters=num_filters,
+                kernel_size=kernel_size,
                 trainable=training,
                 use_bias=False)
             activity = normalization.batch(
@@ -151,7 +153,7 @@ def build_model(data_tensor, reuse, training):
     return activity
 
 
-def main(gpu_device='/gpu:0', cpu_device='/cpu:0'):
+def main(placeholders=False, gpu_device='/gpu:0', cpu_device='/cpu:0'):
     """Run an experiment with hGRUs."""
     config = Config()
     params = experiment_params()
@@ -159,9 +161,17 @@ def main(gpu_device='/gpu:0', cpu_device='/cpu:0'):
         params=params,
         config=config,
         model_spec=build_model,
+        placeholders=placeholders,
         gpu_device=gpu_device,
         cpu_device=cpu_device)
 
 
 if __name__ == '__main__':
-    main()
+    parser = ArgumentParser()
+    parser.add_argument(
+        '--placeholders',
+        dest='placeholders',
+        action='store_true',
+        help='Use placeholder data loading.')
+    args = parser.parse_args()
+    main(**vars(args))

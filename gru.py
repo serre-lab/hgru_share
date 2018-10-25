@@ -7,6 +7,7 @@ from layers.feedforward import pooling
 from layers.recurrent import gru
 from config import Config
 from ops import model_tools
+from argparse import ArgumentParser
 
 
 def experiment_params():
@@ -62,7 +63,7 @@ def build_model(data_tensor, reuse, training):
                 trainable=training,
                 use_bias=True,
                 aux=conv_aux)
-            layer_hgru = hgru.hGRU(
+            layer_hgru = gru.GRU(
                 'hgru_1',
                 x_shape=x.get_shape().as_list(),
                 timesteps=8,
@@ -74,7 +75,7 @@ def build_model(data_tensor, reuse, training):
             h2 = layer_hgru.build(x)
             h2 = normalization.batch(
                 bottom=h2,
-                renorm=True,
+                # renorm=True,
                 name='hgru_bn',
                 training=training)
 
@@ -93,7 +94,7 @@ def build_model(data_tensor, reuse, training):
                 aux=pool_aux)
             activity = normalization.batch(
                 bottom=activity,
-                renorm=True,
+                # renorm=True,
                 name='readout_1_bn',
                 training=training)
 
@@ -107,7 +108,7 @@ def build_model(data_tensor, reuse, training):
     return activity, h2
 
 
-def main(gpu_device='/gpu:0', cpu_device='/cpu:0'):
+def main(placeholders=False, gpu_device='/gpu:0', cpu_device='/cpu:0'):
     """Run an experiment with hGRUs."""
     config = Config()
     params = experiment_params()
@@ -115,9 +116,17 @@ def main(gpu_device='/gpu:0', cpu_device='/cpu:0'):
         params=params,
         config=config,
         model_spec=build_model,
+        placeholders=placeholders,
         gpu_device=gpu_device,
         cpu_device=cpu_device)
 
 
 if __name__ == '__main__':
-    main()
+    parser = ArgumentParser()
+    parser.add_argument(
+        '--placeholders',
+        dest='placeholders',
+        action='store_true',
+        help='Use placeholder data loading.')
+    args = parser.parse_args()
+    main(**vars(args))

@@ -57,4 +57,3 @@ def pearson_score(pred, labels, eps_1=1e-4, eps_2=1e-12):
                 -1),
             count))
     return cov / (tf.multiply(x1_std, x2_std) + eps_2)
-

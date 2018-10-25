@@ -30,16 +30,6 @@ try:
             data_format=data_format)
         dw = 0.5 * (dw + tf.transpose(dw, (0, 1, 3, 2)))
         return dx, dw
-        # dw_t = tf.transpose(
-        #     dw,
-        #     (2, 3, 0, 1))
-        # dw_symm_t = (0.5) * (dw_t + tf.transpose(
-        #     dw_t,
-        #     (1, 0, 2, 3)))
-        # dw_symm = tf.transpose(
-        #     dw_symm_t,
-        #     (2, 3, 0, 1))
-        # return dx, dw_symm
 except Exception, e:
     print str(e)
     print 'Already imported SymmetricConv.'

@@ -79,7 +79,7 @@ def build_model(data_tensor, reuse, training):
             h2 = layer_hgru.build(x)
             h2 = normalization.batch(
                 bottom=h2,
-                renorm=True,
+                # renorm=True,
                 name='hgru_bn',
                 training=training)
 
@@ -98,7 +98,7 @@ def build_model(data_tensor, reuse, training):
                 aux=pool_aux)
             activity = normalization.batch(
                 bottom=activity,
-                renorm=True,
+                # renorm=True,
                 name='readout_1_bn',
                 training=training)
 

@@ -168,7 +168,7 @@ def image_augmentations(
     """Coordinating image augmentations for both image and heatmap."""
     im_size = [int(x) for x in image.get_shape()]
     im_size_check = np.any(
-        np.less_equal(  #not_equal(
+        np.less_equal(
             model_input_image_size[:2],
             im_size[:2]))
     if data_augmentations is not None:
