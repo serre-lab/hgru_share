@@ -13,35 +13,35 @@ from ops import data_structure
 from ops import data_loader
 from ops import optimizers
 from ops import gradients
+from argparse import ArgumentParser
 
 
 def experiment_params():
     """Parameters for the experiment."""
-    exp = {
-        'lr': [1e-3],
-        'loss_function': ['cce'],
-        'optimizer': ['nadam'],
-        'dataset': [
-            # 'curv_contour_length_9',
-            'curv_contour_length_14',
-            # 'curv_baseline',
-        ]
-    }
+    exp = {}
+    exp['lr'] = 1e-3
+    exp['loss_function'] = 'cce'
+    exp['optimizer'] = 'nadam'
+    exp['dataset'] = 'curv_contour_length_14_full'
     exp['data_augmentations'] = [
         [
             'grayscale',
-            'left_right',
-            'up_down',
+            # 'left_right',
+            # 'up_down',
             'uint8_rescale',
             'singleton',
             'resize',
+            # 'per_image_standardization',
             'zero_one'
         ]]
     exp['val_augmentations'] = exp['data_augmentations']
     exp['batch_size'] = 32  # Train/val batch size.
-    exp['epochs'] = 16
-    exp['model_name'] = 'nonlinear_lesion_hgru'
-    exp['exp_name'] = 'nonlinear_lesion_hgru_pathfinder_14'
+    exp['epochs'] = 2
+    exp['model_name'] = __file__.split('.')[0]
+    exp['exp_name'] = '%s_%s' % (
+        exp['model_name'].split(os.path.sep)[-1],
+        exp['dataset'])
+    # exp['clip_gradients'] = 7.
     exp['save_weights'] = True
     exp['validation_iters'] = 1000
     exp['num_validation_evals'] = 50
@@ -275,6 +275,26 @@ def main(
         data_structure=ds)
 
 
+def main(placeholders=False, gpu_device='/gpu:0', cpu_device='/cpu:0'):
+    """Run an experiment with hGRUs."""
+    config = Config()
+    params = experiment_params()
+    model_tools.model_builder(
+        params=params,
+        config=config,
+        model_spec=build_model,
+        placeholders=placeholders,
+        gpu_device=gpu_device,
+        cpu_device=cpu_device)
+
+
 if __name__ == '__main__':
-    main()
+    parser = ArgumentParser()
+    parser.add_argument(
+        '--placeholders',
+        dest='placeholders',
+        action='store_true',
+        help='Use placeholder data loading.')
+    args = parser.parse_args()
+    main(**vars(args))
 

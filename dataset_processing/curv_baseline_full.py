@@ -7,7 +7,8 @@ from ops import tf_fun
 
 class data_processing(object):
     def __init__(self):
-        self.name = 'curv_baseline'
+        self.name = 'curv_baseline_full'
+        self.data_name = 'curv_baseline'
         self.contour_dir = '/media/data_cifs/curvy_2snakes_300/'
         self.im_extension = '.png'
         self.label_regex = r'(?<=length)\d+'
@@ -23,6 +24,7 @@ class data_processing(object):
         self.normalize_im = False
         self.balance = True
         self.shuffle = True
+        self.all_flips = True
         self.input_normalization = 'none'  # 'zscore'
         self.preprocess = ['']  # ['resize_nn']
         self.meta = os.path.join('metadata', 'combined.npy')
@@ -69,14 +71,14 @@ class data_processing(object):
         positive_meta = np.load(
             os.path.join(
                 self.contour_dir,
-                self.name,
+                self.data_name,
                 self.meta))
         negative_meta = np.load(
             os.path.join(
                 self.contour_dir,
                 self.negative,
                 self.meta))
-        positive_ims = self.list_files(positive_meta, self.name)
+        positive_ims = self.list_files(positive_meta, self.data_name)
         negative_ims = self.list_files(negative_meta, self.negative)
         positive_ims = positive_ims[
             np.random.permutation(len(positive_ims))]

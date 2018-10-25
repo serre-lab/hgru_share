@@ -7,7 +7,8 @@ from ops import tf_fun
 
 class data_processing(object):
     def __init__(self):
-        self.name = 'curv_contour_length_14'
+        self.name = 'curv_contour_length_9_full'
+        self.data_name = 'curv_contour_length_9'
         self.contour_dir = '/media/data_cifs/curvy_2snakes_300/'
         self.im_extension = '.png'
         self.label_regex = r'(?<=length)\d+'
@@ -21,12 +22,13 @@ class data_processing(object):
         self.score_metric = 'accuracy'
         self.store_z = False
         self.normalize_im = False
+        self.all_flips = True
         self.balance = True
         self.shuffle = True
         self.input_normalization = 'none'  # 'zscore'
         self.preprocess = ['']  # ['resize_nn']
         self.meta = os.path.join('metadata', 'combined.npy')
-        self.negative = 'curv_contour_length_14_neg'
+        self.negative = 'curv_contour_length_9_neg'
         self.folds = {
             'train': 'train',
             'val': 'val'
@@ -69,14 +71,14 @@ class data_processing(object):
         positive_meta = np.load(
             os.path.join(
                 self.contour_dir,
-                self.name,
+                self.data_name,
                 self.meta))
         negative_meta = np.load(
             os.path.join(
                 self.contour_dir,
                 self.negative,
                 self.meta))
-        positive_ims = self.list_files(positive_meta, self.name)
+        positive_ims = self.list_files(positive_meta, self.data_name)
         negative_ims = self.list_files(negative_meta, self.negative)
         positive_ims = positive_ims[
             np.random.permutation(len(positive_ims))]

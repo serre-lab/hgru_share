@@ -21,15 +21,23 @@ class hGRU(object):
             strides=[1, 1, 1, 1],
             padding='SAME',
             aux=None,
+            data_format='NHWC',
             train=True):
         """Global initializations and settings."""
-        self.n, self.h, self.w, self.k = x_shape
+        if data_format == 'NHWC':
+            self.n, self.h, self.w, self.k = x_shape
+            self.bias_shape = [1, 1, 1, self.k]
+        elif data_format == 'NCHW':
+            self.n, self.k, self.h, self.w = x_shape
+            self.bias_shape = [1, self.k, 1, 1]
+        else:
+            raise NotImplementedError(data_format)
         self.timesteps = timesteps
         self.strides = strides
         self.padding = padding
         self.train = train
         self.layer_name = layer_name
-
+        self.data_format = data_format
         # Sort through and assign the auxilliary variables
         default_vars = self.defaults()
         if aux is not None and isinstance(aux, dict):
@@ -42,7 +50,6 @@ class hGRU(object):
         self.h_shape = [self.h_ext, self.h_ext, self.k, self.k]
         self.g_shape = [self.gate_filter, self.gate_filter, self.k, self.k]
         self.m_shape = [self.gate_filter, self.gate_filter, self.k, self.k]
-        self.bias_shape = [1, 1, 1, self.k]
 
         # Nonlinearities and initializations
         if isinstance(self.recurrent_nl, basestring):
@@ -75,6 +82,7 @@ class hGRU(object):
             'mu': True,  # subtractive eCRF
             'adaptation': True,
             'multiplicative_excitation': True,
+            'constrain': False  # Constrain greek letters to be +
         }
 
     def interpret_nl(self, nl_type):
@@ -87,6 +95,8 @@ class hGRU(object):
             return tf.nn.selu
         elif nl_type == 'leaky_relu':
             return tf.nn.leaky_relu
+        elif nl_type == 'sigmoid':
+            return tf.sigmoid
         elif nl_type == 'hard_tanh':
             return lambda z: tf.maximum(tf.minimum(z, 1), 0)
         elif nl_type == 'relu6':
@@ -104,6 +114,10 @@ class hGRU(object):
         """ Prepare recurrent/forward weight matrices.
         (np.prod([h, w, k]) / 2) - k params in the surround filter
         """
+        if self.constrain:
+            constraint = lambda x: tf.clip_by_value(x, 0, np.infty)
+        else:
+            constraint = None
         with tf.variable_scope('%s_hgru_weights' % self.layer_name):
             self.horizontal_kernels = tf.get_variable(
                 name='%s_horizontal' % self.layer_name,
@@ -156,6 +170,7 @@ class hGRU(object):
                 self.alpha = tf.get_variable(
                     name='%s_alpha' % self.layer_name,
                     trainable=self.train,
+                    constraint=constraint,
                     initializer=initialization.xavier_initializer(
                         shape=self.bias_shape,
                         uniform=self.normal_initializer,
@@ -169,10 +184,12 @@ class hGRU(object):
                 self.mu = tf.get_variable(
                     name='%s_mu' % self.layer_name,
                     trainable=self.train,
+                    constraint=constraint,
                     initializer=initialization.xavier_initializer(
                         shape=self.bias_shape,
                         uniform=self.normal_initializer,
                         mask=None))
+
             elif self.lesion_mu:
                 self.mu = tf.constant(0.)
             else:
@@ -182,6 +199,7 @@ class hGRU(object):
                 self.gamma = tf.get_variable(
                     name='%s_gamma' % self.layer_name,
                     trainable=self.train,
+                    constraint=constraint,
                     initializer=initialization.xavier_initializer(
                         shape=self.bias_shape,
                         uniform=self.normal_initializer,
@@ -196,6 +214,7 @@ class hGRU(object):
                     self.kappa = tf.get_variable(
                         name='%s_kappa' % self.layer_name,
                         trainable=self.train,
+                        constraint=constraint,
                         initializer=initialization.xavier_initializer(
                             shape=self.bias_shape,
                             uniform=self.normal_initializer,
@@ -206,10 +225,12 @@ class hGRU(object):
                     self.omega = tf.get_variable(
                         name='%s_omega' % self.layer_name,
                         trainable=self.train,
+                        constraint=constraint,
                         initializer=initialization.xavier_initializer(
                             shape=self.bias_shape,
                             uniform=self.normal_initializer,
                             mask=None))
+
             else:
                 self.kappa = tf.constant(1.)
                 self.omega = tf.constant(1.)
@@ -241,12 +262,14 @@ class hGRU(object):
                         data,
                         weights,
                         self.strides,
+                        data_format=self.data_format,
                         padding=self.padding)
             else:
                 activities = tf.nn.conv2d(
                     data,
                     weights,
                     self.strides,
+                    data_format=self.data_format,
                     padding=self.padding)
         else:
             raise RuntimeError
@@ -265,7 +288,6 @@ class hGRU(object):
             data=h2 * g1,
             weights=self.horizontal_kernels,
             symmetric_weights=self.symmetric_weights)
-        # c1 += self.h_bias
         return c1
 
     def circuit_output(self, h1):
@@ -283,7 +305,6 @@ class hGRU(object):
             data=h1,
             weights=self.horizontal_kernels,
             symmetric_weights=self.symmetric_weights)
-        # c2 += self.h_bias
         return c2, g2
 
     def input_integration(self, x, c1, h2):
@@ -378,4 +399,3 @@ class hGRU(object):
         # Prepare output
         i0, x, h1, h2 = returned
         return h2
-
