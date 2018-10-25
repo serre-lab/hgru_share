@@ -70,7 +70,11 @@ def build_model(data_tensor, reuse, training):
                 h_ext=15,
                 strides=[1, 1, 1, 1],
                 padding='SAME',
-                aux={'reuse': False, 'constrain': False, 'recurrent_nl': tf.nn.relu},
+                aux={
+                    'reuse': False,
+                    'constrain': False,
+                    'recurrent_nl': tf.nn.relu
+                },
                 train=training)
             h2 = layer_hgru.build(x)
             h2 = normalization.batch(
