@@ -150,7 +150,7 @@ def build_model(data_tensor, reuse, training):
             activity = tf.layers.dense(
                 inputs=activity,
                 units=2)
-    return activity
+    return activity, activity
 
 
 def main(placeholders=False, gpu_device='/gpu:0', cpu_device='/cpu:0'):
