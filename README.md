@@ -8,3 +8,11 @@ The code is structured to work based on directory paths described in `config.py`
 Classes in `dataset_processing` describe datasets that you will use with your models. The project expects TFRecords, and placeholders are depreciated.
 
 Model scripts in the main directory have the function, `experiment_params`. This describes the experiment parameters for your project, such as learning rates, datasets, and batch sizes. Once this is set, you can run any of the models in the main directory. For example: `CUDA_VISIBLE_DEVICES=0 python hgru.py`.
+
+- hgru.py. A one-layer hgru with a gabor-kernel feedforward drive.
+- hgru_bn.py. A one-layer batchnorm hGRU with a gabor-kernel feedforward drive.
+- hgru_bn_relu.py. A one-layer batchnorm hGRU with a ReLU nonlinearity, which constrains H^(1) to inhibition and H^(2) to excitation. This model additionally uses two horizontal kernels, W_1 and W_2. It uses the standard gabor-kernel feedforward drive.
+- multiplicative_lesion.py. An hGRU with lesions to its multiplicative horizontal interactions (alpha and omega).
+- additive_lesion.py. An hGRU with lesions to its additive horizontal interactions (mu and kappa).
+- ff_5.py. A 5-layer feedforward control model (referred to as "large kernels" in the manuscript.).
+
