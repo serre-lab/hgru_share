@@ -14,5 +14,5 @@ Model scripts in the main directory have the function, `experiment_params`. This
 - hgru_bn_relu.py. A one-layer batchnorm hGRU with a ReLU nonlinearity, which constrains H^(1) to inhibition and H^(2) to excitation. This model additionally uses two horizontal kernels, W_1 and W_2. It uses the standard gabor-kernel feedforward drive.
 - multiplicative_lesion.py. An hGRU with lesions to its multiplicative horizontal interactions (alpha and omega).
 - additive_lesion.py. An hGRU with lesions to its additive horizontal interactions (mu and kappa).
-- ff_5.py. A 5-layer feedforward control model (referred to as "large kernels" in the manuscript.).
+- ff_5.py. A 5-layer feedforward control model (referred to as "large kernels" in the manuscript).
 
