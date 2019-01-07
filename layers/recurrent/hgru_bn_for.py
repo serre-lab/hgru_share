@@ -348,7 +348,7 @@ class hGRU(object):
             weights=self.mix_kernels,
             symmetric_weights=self.symmetric_gate_weights)
         with tf.variable_scope(
-                '%s/g2_bn_t%s' % (self.var_scope, t0),
+                '%s/g2_bn_t%s' % (self.var_scope, i0),
                 reuse=self.scope_reuse) as scope:
             g2_intermediate = tf.contrib.layers.batch_norm(
                 inputs=g2_intermediate + self.mix_bias,
@@ -477,14 +477,5 @@ class hGRU(object):
         # Loop
         for idx in range(self.timesteps):
             i0, x, h1, h2 = self.full(i0=i0, x=x, h1=h1, h2=h2)
-        returned = tf.while_loop(
-            self.condition,
-            self.full,
-            loop_vars=elems,
-            back_prop=True,
-            swap_memory=False)
-
-        # Prepare output
-        i0, x, h1, h2 = returned
         return h2
 
