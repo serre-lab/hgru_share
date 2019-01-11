@@ -10,7 +10,8 @@ Classes in `dataset_processing` describe datasets that you will use with your mo
 Model scripts in the main directory have the function, `experiment_params`. This describes the experiment parameters for your project, such as learning rates, datasets, and batch sizes. Once this is set, you can run any of the models in the main directory. For example: `CUDA_VISIBLE_DEVICES=0 python hgru.py`.
 
 - hgru.py. A one-layer hgru with a gabor-kernel feedforward drive.
-- hgru_bn.py. A one-layer batchnorm hGRU with a gabor-kernel feedforward drive.
+- hgru_bn.py. A one-layer batchnorm (shared across timesteps) hGRU with a gabor-kernel feedforward drive.
+- hgru_bn_for.py. A one-layer batchnorm (separate per-timestep) hGRU with a gabor-kernel feedforward drive.
 - hgru_bn_relu.py. A one-layer batchnorm hGRU with a ReLU nonlinearity, which constrains H^(1) to inhibition and H^(2) to excitation. This model additionally uses two horizontal kernels, W_1 and W_2. It uses the standard gabor-kernel feedforward drive.
 - multiplicative_lesion.py. An hGRU with lesions to its multiplicative horizontal interactions (alpha and omega).
 - additive_lesion.py. An hGRU with lesions to its additive horizontal interactions (mu and kappa).

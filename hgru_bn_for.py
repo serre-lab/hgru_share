@@ -15,7 +15,7 @@ def experiment_params():
     exp = {}
     exp['lr'] = 1e-3
     exp['loss_function'] = 'cce'
-    exp['optimizer'] = 'nadam'
+    exp['optimizer'] = 'adam'
     exp['dataset'] = 'curv_contour_length_14_full'
     exp['data_augmentations'] = [
         [
