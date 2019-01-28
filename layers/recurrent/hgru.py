@@ -76,6 +76,7 @@ class hGRU(object):
             'normal_initializer': True,
             'symmetric_weights': True,
             'symmetric_gate_weights': False,
+            'symmetric_inits': True,
             'gate_filter': 1,  # Gate kernel size
             'gamma': True,  # Scale P
             'alpha': True,  # divisive eCRF
@@ -110,6 +111,10 @@ class hGRU(object):
             for k, v in kwargs.iteritems():
                 setattr(self, k, v)
 
+    def symmetric_init(self, w):
+        """Initialize symmetric weight sharing."""
+        return 0.5 * (w + tf.transpose(w, (0, 1, 3, 2)))
+
     def prepare_tensors(self):
         """ Prepare recurrent/forward weight matrices.
         (np.prod([h, w, k]) / 2) - k params in the surround filter
@@ -126,6 +131,8 @@ class hGRU(object):
                     shape=self.h_shape,
                     uniform=self.normal_initializer),
                 trainable=self.train)
+            if self.symmetric_weights and self.symmetric_inits:
+                self.horizontal_kernels = self.symmetric_init(self.horizontal_kernels)
             self.gain_kernels = tf.get_variable(
                 name='%s_gain' % self.layer_name,
                 dtype=self.dtype,
@@ -142,6 +149,9 @@ class hGRU(object):
                     shape=self.m_shape,
                     uniform=self.normal_initializer,
                     mask=None))
+            if self.symmetric_gate_weights and self.symmetric_inits:
+                self.gain_kernels = self.symmetric_init(self.gain_kernels)
+                self.mix_kernels = self.symmetric_init(self.mix_kernels)
 
             # Gain bias
             if self.gate_bias_init == 'chronos':
