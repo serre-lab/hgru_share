@@ -400,7 +400,7 @@ class hGRU(object):
                 h1 + self.gamma * c2)
         return (g2 * h2) + ((1 - g2) * h2_hat)
 
-    def full(self, i0, x, h1, h2):
+    def full(self, i0, x, h2):
         """hGRU body."""
         # Circuit input receives recurrent output h2
         c1 = self.circuit_input(h2=h2, i0=i0)
@@ -455,7 +455,7 @@ class hGRU(object):
 
         # Iterate loop
         i0 += 1
-        return i0, x, h1, h2
+        return i0, x, h2
 
     def condition(self, i0, x, h1, h2):
         """While loop halting condition."""
@@ -467,25 +467,27 @@ class hGRU(object):
         x_shape = x.get_shape().as_list()
         i0 = 0  # tf.constant(0)
         if self.hidden_init == 'identity':
-            h1 = tf.identity(x)
             h2 = tf.identity(x)
         elif self.hidden_init == 'random':
-            h1 = initialization.xavier_initializer(
-                shape=x_shape,
-                uniform=self.normal_initializer,
-                mask=None)
             h2 = initialization.xavier_initializer(
                 shape=x_shape,
                 uniform=self.normal_initializer,
                 mask=None)
         elif self.hidden_init == 'zeros':
-            h1 = tf.zeros_like(x)
             h2 = tf.zeros_like(x)
+        elif self.hidden_init == 'learned':
+            h2 = tf.get_variable(
+                name='%s_h2_state' % self.layer_name,
+                dtype=self.dtype,
+                initializer=initialization.xavier_initializer(
+                    shape=x_shape,
+                    uniform=self.normal_initializer),
+                trainable=self.train)
         else:
             raise RuntimeError
 
         # Loop
         for idx in range(self.timesteps):
-            i0, x, h1, h2 = self.full(i0=i0, x=x, h1=h1, h2=h2)
+            i0, x, h2 = self.full(i0=i0, x=x, h2=h2)
         return h2
 
