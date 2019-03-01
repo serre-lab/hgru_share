@@ -92,7 +92,7 @@ class hGRU(object):
             'hidden_init': 'random',
             'gate_bias_init': 'chronos',
             'train': True,
-            'recurrent_nl': tf.nn.tanh,
+            'recurrent_nl': tf.nn.relu,
             'gate_nl': tf.nn.sigmoid,
             'normal_initializer': False,
             'symmetric_weights': True,

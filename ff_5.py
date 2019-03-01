@@ -74,6 +74,7 @@ def build_model(data_tensor, reuse, training):
             activity = normalization.batch(
                 bottom=activity,
                 name='c1_bn',
+                reuse=reuse,
                 training=training)
             activity = tf.nn.relu(activity)
             activity = conv.conv_layer(
@@ -86,6 +87,7 @@ def build_model(data_tensor, reuse, training):
             activity = normalization.batch(
                 bottom=activity,
                 name='c2_bn',
+                reuse=reuse,
                 training=training)
             activity = tf.nn.relu(activity)
             activity = conv.conv_layer(
@@ -98,6 +100,7 @@ def build_model(data_tensor, reuse, training):
             activity = normalization.batch(
                 bottom=activity,
                 name='c3_bn',
+                reuse=reuse,
                 training=training)
             activity = tf.nn.relu(activity)
             activity = conv.conv_layer(
@@ -110,6 +113,7 @@ def build_model(data_tensor, reuse, training):
             activity = normalization.batch(
                 bottom=activity,
                 name='c4_bn',
+                reuse=reuse,
                 training=training)
             activity = tf.nn.relu(activity)
             activity = conv.conv_layer(
@@ -122,6 +126,7 @@ def build_model(data_tensor, reuse, training):
             activity = normalization.batch(
                 bottom=activity,
                 name='c5_bn',
+                reuse=reuse,
                 training=training)
             activity = tf.nn.relu(activity)
 
@@ -140,6 +145,7 @@ def build_model(data_tensor, reuse, training):
                 aux=pool_aux)
             activity = normalization.batch(
                 bottom=activity,
+                reuse=reuse,
                 name='readout_1_bn',
                 training=training)
 
