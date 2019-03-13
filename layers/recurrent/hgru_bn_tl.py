@@ -148,42 +148,58 @@ class hGRU(object):
             constraint = None
         self.var_scope = '%s_hgru_weights' % self.layer_name
         with tf.variable_scope(self.var_scope):
+            if self.symmetric_weights and self.symmetric_inits:
+                hi_init = self.symmetric_init(
+                    initialization.xavier_initializer(
+                        shape=self.h_shape,
+                        uniform=self.normal_initializer))
+                he_init = self.symmetric_init(
+                    initialization.xavier_initializer(
+                        shape=self.h_shape,
+                        uniform=self.normal_initializer))
+            else:
+                hi_init = initialization.xavier_initializer(
+                    shape=self.h_shape,
+                    uniform=self.normal_initializer)
+                he_init = initialization.xavier_initializer(
+                    shape=self.h_shape,
+                    uniform=self.normal_initializer)
+
             self.horizontal_kernels_1 = tf.get_variable(
                 name='%s_horizontal_1' % self.layer_name,
                 dtype=self.dtype,
-                initializer=initialization.xavier_initializer(
-                    shape=self.h_shape,
-                    uniform=self.normal_initializer),
+                initializer=hi_init,
                 trainable=self.train)
             self.horizontal_kernels_2 = tf.get_variable(
                 name='%s_horizontal_2' % self.layer_name,
                 dtype=self.dtype,
-                initializer=initialization.xavier_initializer(
-                    shape=self.h_shape,
-                    uniform=self.normal_initializer),
-                trainable=self.train)
-            if self.symmetric_weights and self.symmetric_inits:
-                self.horizontal_kernels_1 = self.symmetric_init(self.horizontal_kernels_1)
-                self.horizontal_kernels_2 = self.symmetric_init(self.horizontal_kernels_2)
+                initializer=he_init)
+            if self.symmetric_gate_weights and self.symmetric_inits:
+                g_init = self.symmetric_init(
+                    initialization.xavier_initializer(
+                        shape=self.g_shape,
+                        uniform=self.normal_initializer))
+                m_init = self.symmetric_init(
+                    initialization.xavier_initializer(
+                        shape=self.m_shape,
+                        uniform=self.normal_initializer))
+            else:
+                g_init = initialization.xavier_initializer(
+                    shape=self.g_shape,
+                    uniform=self.normal_initializer)
+                m_init = initialization.xavier_initializer(
+                    shape=self.m_shape,
+                    uniform=self.normal_initializer)
             self.gain_kernels = tf.get_variable(
                 name='%s_gain' % self.layer_name,
                 dtype=self.dtype,
                 trainable=self.train,
-                initializer=initialization.xavier_initializer(
-                    shape=self.g_shape,
-                    uniform=self.normal_initializer,
-                    mask=None))
+                initializer=g_init)
             self.mix_kernels = tf.get_variable(
                 name='%s_mix' % self.layer_name,
                 dtype=self.dtype,
                 trainable=self.train,
-                initializer=initialization.xavier_initializer(
-                    shape=self.m_shape,
-                    uniform=self.normal_initializer,
-                    mask=None))
-            if self.symmetric_gate_weights and self.symmetric_inits:
-                self.gain_kernels = self.symmetric_init(self.gain_kernels)
-                self.mix_kernels = self.symmetric_init(self.mix_kernels)
+                initializer=m_init)
 
             # Gain bias
             if self.gate_bias_init == 'chronos':
