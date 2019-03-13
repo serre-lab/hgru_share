@@ -123,6 +123,7 @@ class hGRU(object):
             constraint = lambda x: tf.clip_by_value(x, 0, np.infty)
         else:
             constraint = None
+        self.var_scope = '%s_hgru_weights' % self.layer_name
         with tf.variable_scope(self.var_scope):
             if self.symmetric_weights and self.symmetric_inits:
                 h_init = self.symmetric_init(
